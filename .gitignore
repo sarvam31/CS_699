@@ -1,2 +1,4 @@
-
-.idea
+.gitignore
+cs699_venv/
+data/
+__pycache__/
