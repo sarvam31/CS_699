@@ -20,12 +20,12 @@
 
 \begin{figure}[h!]
 \centering
-\includegraphics[width=100mm]{bird_test}
-\caption*{Prediction: modelpredictedspecies}
+\includegraphics[width=100mm]{/home/sarvam/Documents/cs_699/CS_699/report/images/bird_test.jpg}
+\caption*{Prediction: Red-Vented Bulbul}
 \label{fig:method}
 \end{figure}
 
-\noindent Classifier: classifiername
+\noindent Classifier: SVM
 \newline
 \newline
 \newline
@@ -37,15 +37,15 @@
 \hline
  S.No. & Species Name & Prediction Probability\\ 
 \hline
- 1 & Blue Jay & probscore1 \\ 
+ 1 & Blue Jay & 0.25736201882941784 \\ 
  \hline
- 2 & Grey Heron & probscore2 \\  
+ 2 & Grey Heron & 0.21008065131897025 \\  
  \hline
- 3 & Indian Peafowl & probscore3 \\    
+ 3 & Indian Peafowl & 0.08892648909062341 \\    
  \hline
- 4 & Little Egret & probscore4 \\    
+ 4 & Little Egret & 0.12540957486488516 \\    
  \hline
- 5 & Red-Vented Bulbul & probscore5 \\    
+ 5 & Red-Vented Bulbul & 0.31822126589610333 \\    
  \hline
 \end{tabular}
 \caption{Species wise prediciton probability}
@@ -58,7 +58,7 @@
 \newpage
 \section{Model Report}
 
-\textbf{Classifier:} classifiername
+\textbf{Classifier:} SVM
 \newline
 
 \noindent \textbf{Dataset:}
@@ -77,23 +77,34 @@ Train-Test Split: 80:20
   \item Little Egret
   \item Red-Vented Bulbul
 \end{enumerate}
-\vspace{10mm}
+\vspace{5mm}
 \noindent \textbf{Metrics:}
 \newline
 \newline
 \noindent \textbf{Classification Report:}
 
-sklearnreport
-\newline
+\begin{verbatim}                   precision    recall  f1-score   support
 
+         Blue Jay       0.07      0.08      0.07        12
+       Grey Heron       0.31      0.33      0.32        12
+   Indian Peafowl       0.33      0.25      0.29        12
+     Little Egret       0.27      0.25      0.26        12
+Red-Vented Bulbul       0.25      0.25      0.25        12
+
+         accuracy                           0.23        60
+        macro avg       0.25      0.23      0.24        60
+     weighted avg       0.25      0.23      0.24        60
+\end{verbatim}
+\newpage
 \noindent \textbf{Confusion Matrix:}
 
 \begin{figure}[h!]
 \centering
-\includegraphics[width=100mm]{images/output.jpg}
+\includegraphics[width=100mm]{/home/sarvam/Documents/cs_699/CS_699/report/images/output.jpg}
 \end{figure}
-
-
-
-
+\noindent \textbf{Accuracy Plot:}
+\begin{figure}[h!]
+\centering
+\includegraphics[width=100mm]{/home/sarvam/Documents/cs_699/CS_699/report/images/model_plot.jpg}
+\end{figure}
 \end{document}
