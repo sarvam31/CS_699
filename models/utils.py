@@ -49,8 +49,8 @@ def load_flattened_data(folder_path: str, species: list, split: str = 'train') -
         for filename in os.listdir(os.path.join(folder_path, type, split)):
             if filename.endswith(".jpg"):
                 img = Image.open(os.path.join(folder_path, type, split, filename))
-                images.append(flatten_image(img))
-                labels.append(type)
+                images.append(flatten_image(img))  # Flatten and append the processed image
+                labels.append(type)  # Append the corresponding label
 
     return np.array(images), np.array(labels)
 
@@ -69,19 +69,20 @@ def get_classifier_report(X_test: np.ndarray, y_test: np.ndarray, species: list,
     Returns:
     - str: Classification report.
     """
-    classifier = load_model(model_path)
-    y_pred = classifier.predict(X_test)
-    report = classification_report(y_test, y_pred)
+    classifier = load_model(model_path)  # Load the trained model
+    y_pred = classifier.predict(X_test)  # Predict using the test data
+    report = classification_report(y_test, y_pred)  # Generate the classification report
 
     # Generate and save the confusion matrix plot
     conf_mat = confusion_matrix(y_test, y_pred)
     heatmap(conf_mat, column_names=species, row_names=species, figsize=(20, 20), cmap="BuPu")
 
-    fig = plt.gcf()
+    fig = plt.gcf()  # Get the current figure
     plt.figure()
-    fig.savefig(save_conf_matrix_path)
+    fig.savefig(save_conf_matrix_path)  # Save the confusion matrix plot
 
-    return report
+    return report  # Return the classification report
+
 
 def load_model(model_path: str):
     """

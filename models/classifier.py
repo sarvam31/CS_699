@@ -16,7 +16,6 @@ CLASSIFIERS = {
 DATA_PATH = os.path.join(os.getcwd(), 'processed') 
 
 X_train, y_train = utils.load_flattened_data(DATA_PATH, SPECIES, split = 'train')
-# X_test, y_test = utils.load_flattened_data(DATA_PATH, SPECIES, split = 'test')
 
 TRAINED_MODELS_PATH = os.path.join(os.getcwd(), 'models/trained_models')
 
@@ -29,11 +28,11 @@ def train_RF_classifier(X_train: np.ndarray, y_train: np.ndarray, save_model_pat
     - y_train (np.ndarray): Training labels.
     - save_model_path (str): Path to save the trained model file.
     """
-    classifier = RandomForestClassifier()
-    classifier.fit(X_train, y_train)
-    save_model(os.path.join(save_model_path, CLASSIFIERS['Random Forest']), classifier)
+    classifier = RandomForestClassifier()  # Initialize Random Forest classifier
+    classifier.fit(X_train, y_train)  # Train the classifier
+    save_model(os.path.join(save_model_path, CLASSIFIERS['Random Forest']), classifier)  # Save the trained model
 
-    print('Random forest classifier training complete')
+    print('Random forest classifier training complete')  # Display completion message
 
 
 def train_SVM_classifier(X_train: np.ndarray, y_train: np.ndarray, save_model_path: str):
@@ -45,11 +44,12 @@ def train_SVM_classifier(X_train: np.ndarray, y_train: np.ndarray, save_model_pa
     - y_train (np.ndarray): Training labels.
     - save_model_path (str): Path to save the trained model file.
     """
-    classifier = SVC(probability=True)
-    classifier.fit(X_train, y_train)
-    save_model(os.path.join(save_model_path, CLASSIFIERS['SVM']), classifier)
+    classifier = SVC(probability=True)  # Initialize SVM classifier
+    classifier.fit(X_train, y_train)  # Train the classifier
+    save_model(os.path.join(save_model_path, CLASSIFIERS['SVM']), classifier)  # Save the trained model
 
-    print('SVM classifier training complete')
+    print('SVM classifier training complete')  # Display completion message
+
     
 
 # def train_CNN_classifier(X_train, y_train, save_model_path):

@@ -33,22 +33,27 @@ def generate_report(selected_model, img):
     Raises:
     - Exception: If unable to generate the report PDF.
     """
+    # Construct the path to the selected model
     model_path = os.path.join(TRAINED_MODELS_PATH, CLASSIFIERS[selected_model])
 
+    # Load the selected model
     classifier = load_model(model_path)
 
+    # Process the input image
     processed_img = process(img)
 
+    # Flatten and reshape image input based on the selected model type
     if selected_model in ['Random Forest', 'SVM']:
         classifier_input = flatten_image(processed_img)
         classifier_input = classifier_input.reshape(1, classifier_input.shape[0])
-
     else:
         # handle image process for cnn model
         pass
 
-    X_test, y_test = load_flattened_data(DATA_PATH, SPECIES, split = 'test')
-    
+    # Load test data
+    X_test, y_test = load_flattened_data(DATA_PATH, SPECIES, split='test')
+
+    # Generate respective plots based on the selected model
     if selected_model == 'Random Forest':
         generate_rf_plot(X_test, y_test, MODEL_PLOT_PATH)
     elif selected_model == 'SVM':
@@ -56,43 +61,52 @@ def generate_report(selected_model, img):
     else:
         generate_cnn_plot(X_test, y_test, MODEL_PLOT_PATH)
 
+    # Predict the class of the input image
     predicted_class = classifier.predict(classifier_input)
 
+    # Get probability scores for each class
     prob_scores = classifier.predict_proba(classifier_input)
-    
+
+    # Generate classifier report and confusion matrix
     classifier_report = get_classifier_report(X_test, y_test, SPECIES, model_path, SAVE_CONF_MATRIX_PATH)
-    
+
+    # Load the LaTeX main template file
     tex_code = load_file(MAIN_TEX)
 
+    # Data dictionary to replace placeholders in the LaTeX template
     data = {
-        'modelpredictedspecies' : predicted_class[0],
-        'classifiername' : selected_model,
-        'probscore1' : prob_scores[0][0],
-        'probscore2' : prob_scores[0][1],
-        'probscore3' : prob_scores[0][2],
-        'probscore4' : prob_scores[0][3],
-        'probscore5' : prob_scores[0][4],
-        'sklearnreport' : classifier_report,
-        'bird_test' : BIRD_IMAGE_PATH,
-        'conf_matrix' : SAVE_CONF_MATRIX_PATH,
-        'accu_plot' : MODEL_PLOT_PATH
+        'modelpredictedspecies': predicted_class[0],
+        'classifiername': selected_model,
+        'probscore1': prob_scores[0][0],
+        'probscore2': prob_scores[0][1],
+        'probscore3': prob_scores[0][2],
+        'probscore4': prob_scores[0][3],
+        'probscore5': prob_scores[0][4],
+        'sklearnreport': classifier_report,
+        'bird_test': BIRD_IMAGE_PATH,
+        'conf_matrix': SAVE_CONF_MATRIX_PATH,
+        'accu_plot': MODEL_PLOT_PATH
     }
-    
+
+    # Save the bird image
     img.save(BIRD_IMAGE_PATH)
 
+    # Replace placeholders in the LaTeX template with actual values
     for key, value in data.items():
         tex_code = tex_code.replace(key, str(value))
 
+    # Write the updated LaTeX template to the output file
     with open(OUTPUT_TEX, 'w') as f:
         f.write(tex_code)
 
-    # Run the command and capture output
+    # Run the command to generate the report PDF and capture the output
     output = subprocess.run(COMMAND, shell=True, capture_output=True, text=True)
 
     # Print the output
     if f'Output written on {OUTPUT_TEX}'.replace('.tex', '.pdf') not in output.stdout:
         raise Exception('Unable to generate report pdf')
-    
+
+
 def generate_rf_plot(X_test, y_test, model_plot_path):
     """Generates a plot depicting Random Forest accuracy over the number of trees.
 
@@ -101,7 +115,7 @@ def generate_rf_plot(X_test, y_test, model_plot_path):
     - y_test (np.ndarray): Test labels.
     - model_plot_path (str): Path to save the generated plot.
     """
-     
+    # List to store accuracy values
     accuracy_values = []
 
     # Training Random Forest with different numbers of trees
@@ -116,10 +130,12 @@ def generate_rf_plot(X_test, y_test, model_plot_path):
     plt.title('Random Forest Accuracy over Number of Trees')
     plt.xlabel('Number of Trees')
     plt.ylabel('Accuracy')
-    
+
+    # Save the generated plot
     fig = plt.gcf()
     plt.figure()
     fig.savefig(model_plot_path)
+
 
 def generate_svm_plot(X_test, y_test, model_plot_path):
     """Generates a plot depicting SVM accuracy over different values of the regularization parameter (C).
@@ -129,9 +145,11 @@ def generate_svm_plot(X_test, y_test, model_plot_path):
     - y_test (np.ndarray): Test labels.
     - model_plot_path (str): Path to save the generated plot.
     """
-    C_values = [0.001, 0.01, 0.1, 1, 10, 100]  # Different values of C to test
+    # Different values of C to test
+    C_values = [0.001, 0.01, 0.1, 1, 10, 100]
     accuracy_values = []
 
+    # Iterating through different C values
     for C in C_values:
         svm_model = SVC(kernel='rbf', C=C, random_state=42)
         svm_model.fit(X_test, y_test)
@@ -145,10 +163,12 @@ def generate_svm_plot(X_test, y_test, model_plot_path):
     plt.xlabel('C (Regularization Parameter)')
     plt.ylabel('Accuracy')
     plt.grid(True)
-    
+
+    # Save the generated plot
     fig = plt.gcf()
     plt.figure()
     fig.savefig(model_plot_path)
+
 
 
 def generate_cnn_plot(X_test, y_test, model_plot_path):
