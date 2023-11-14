@@ -1,28 +1,38 @@
 import os
 import subprocess
 
-from models.classifier import *
-# from models.classifier import TRAINED_MODELS_PATH
-# from models.utils import load_model
+import matplotlib.pyplot as plt
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import SVC
+from models.classifier import load_model, get_classifier_report, load_flattened_data
 from preprocessing.main import process
-from models.utils import *
-# from models.utils import get_classifier_report
-# from models.utils import load_flattened_data
+from models.utils import flatten_image
 
 
-MAIN_TEX = os.path.join(os.getcwd(), 'report/main_template.tex')
-OUTPUT_TEX = os.path.join(os.getcwd(), 'output/main.tex')
-TEX_IMAGES_PATH = os.path.join(os.getcwd(), 'report/images')
-BIRD_IMAGE_PATH = os.path.join(TEX_IMAGES_PATH, 'bird_test.jpg')
-SAVE_CONF_MATRIX_PATH = os.path.join(TEX_IMAGES_PATH, 'output.jpg')
-MODEL_PLOT_PATH = os.path.join(TEX_IMAGES_PATH, 'model_plot.jpg')
-COMMAND = 'pdflatex -output-directory ' + os.path.join(os.getcwd(), 'output') + ' ' + OUTPUT_TEX 
+# Constants defining file paths and commands
+MAIN_TEX: str = os.path.join(os.getcwd(), 'report/main_template.tex')
+OUTPUT_TEX: str = os.path.join(os.getcwd(), 'output/main.tex')
+TEX_IMAGES_PATH: str = os.path.join(os.getcwd(), 'report/images')
+BIRD_IMAGE_PATH: str = os.path.join(TEX_IMAGES_PATH, 'bird_test.jpg')
+SAVE_CONF_MATRIX_PATH: str = os.path.join(TEX_IMAGES_PATH, 'output.jpg')
+MODEL_PLOT_PATH: str = os.path.join(TEX_IMAGES_PATH, 'model_plot.jpg')
+COMMAND: str = 'pdflatex -output-directory ' + os.path.join(os.getcwd(), 'output') + ' ' + OUTPUT_TEX
 
 def load_file(path):
+    """Loads and returns the contents of a file."""
     with open(path, 'r') as file:
         return "".join(file.readlines())
 
 def generate_report(selected_model, img):
+    """Generates a report based on the selected model and image.
+
+    Args:
+    - selected_model (str): The selected classification model.
+    - img (Image): The input image for classification.
+
+    Raises:
+    - Exception: If unable to generate the report PDF.
+    """
     model_path = os.path.join(TRAINED_MODELS_PATH, CLASSIFIERS[selected_model])
 
     classifier = load_model(model_path)
@@ -84,7 +94,14 @@ def generate_report(selected_model, img):
         raise Exception('Unable to generate report pdf')
     
 def generate_rf_plot(X_test, y_test, model_plot_path):
+    """Generates a plot depicting Random Forest accuracy over the number of trees.
 
+    Args:
+    - X_test (np.ndarray): Test features.
+    - y_test (np.ndarray): Test labels.
+    - model_plot_path (str): Path to save the generated plot.
+    """
+     
     accuracy_values = []
 
     # Training Random Forest with different numbers of trees
@@ -105,6 +122,13 @@ def generate_rf_plot(X_test, y_test, model_plot_path):
     fig.savefig(model_plot_path)
 
 def generate_svm_plot(X_test, y_test, model_plot_path):
+    """Generates a plot depicting SVM accuracy over different values of the regularization parameter (C).
+
+    Args:
+    - X_test (np.ndarray): Test features.
+    - y_test (np.ndarray): Test labels.
+    - model_plot_path (str): Path to save the generated plot.
+    """
     C_values = [0.001, 0.01, 0.1, 1, 10, 100]  # Different values of C to test
     accuracy_values = []
 
@@ -128,6 +152,13 @@ def generate_svm_plot(X_test, y_test, model_plot_path):
 
 
 def generate_cnn_plot(X_test, y_test, model_plot_path):
+    """Generates a plot for CNN (Convolutional Neural Network) accuracy (to be implemented).
+
+    Args:
+    - X_test (np.ndarray): Test features.
+    - y_test (np.ndarray): Test labels.
+    - model_plot_path (str): Path to save the generated plot.
+    """
     pass
 
 img = Image.open('/home/sarvam/Documents/cs_699/CS_699/data/Blue Jay/47351251.jpg')
