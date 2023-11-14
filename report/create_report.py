@@ -4,9 +4,9 @@ import subprocess
 import matplotlib.pyplot as plt
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
-from models.classifier import load_model, get_classifier_report, load_flattened_data
+from models.classifier import *
 from preprocessing.main import process
-from models.utils import flatten_image
+from models.utils import *
 
 
 # Constants defining file paths and commands
