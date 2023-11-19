@@ -182,4 +182,4 @@ def generate_cnn_plot(X_test, y_test, model_plot_path):
 
 
 img = Image.open('data/Little Egret/61001311.jpg')
-generate_report('SVM', img)
+generate_report('Random Forest', img)
