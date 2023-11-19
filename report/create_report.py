@@ -35,7 +35,7 @@ def load_file(path):
         return "".join(file.readlines())
 
 
-def generate_report(selected_model, img):
+def generate_report(selected_model, img_file):
     """Generates a report based on the selected model and image.
 
     Args:
@@ -48,10 +48,11 @@ def generate_report(selected_model, img):
     # Construct the path to the selected model
     model_path = Path(os.path.join(TRAINED_MODELS_PATH, CLASSIFIERS[selected_model]))
     # Process the input image
+    img = Image.open(img_file)
     processed_img = process(img)
 
     model = models[selected_model]
-    predicted_class, prob_scores = model.predict(model_path, img)
+    predicted_class, prob_scores = model.predict(model_path, processed_img)
     print(predicted_class, prob_scores, sep='\n')
 
     # Generate classifier report and confusion matrix
@@ -181,5 +182,7 @@ def generate_cnn_plot(X_test, y_test, model_plot_path):
     pass
 
 
-img = Image.open('data/Little Egret/61001311.jpg')
-generate_report('Random Forest', img)
+if __name__ == '__main__':
+    img_path = Path('data/Little Egret/61001311.jpg')
+    with open(img_path, 'rb') as f:
+        generate_report('Random Forest', f)
