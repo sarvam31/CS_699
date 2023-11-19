@@ -20,8 +20,8 @@
 
 \begin{figure}[h!]
 \centering
-\includegraphics[width=100mm]{/home/sarvam/Documents/cs_699/CS_699/report/images/bird_test.jpg}
-\caption*{Prediction: Red-Vented Bulbul}
+\includegraphics[width=100mm]{/Users/smitjivani/Developer/MS_WS/CS699/Project/CS699_Project/report/images/bird_test.jpg}
+\caption*{Prediction: Little Egret}
 \label{fig:method}
 \end{figure}
 
@@ -37,15 +37,15 @@
 \hline
  S.No. & Species Name & Prediction Probability\\ 
 \hline
- 1 & Blue Jay & 0.25736201882941784 \\ 
+ 1 & Blue Jay & 0.2256996884876611 \\ 
  \hline
- 2 & Grey Heron & 0.21008065131897025 \\  
+ 2 & Grey Heron & 0.1462524734996938 \\  
  \hline
- 3 & Indian Peafowl & 0.08892648909062341 \\    
+ 3 & Indian Peafowl & 0.17973677709251093 \\    
  \hline
- 4 & Little Egret & 0.12540957486488516 \\    
+ 4 & Little Egret & 0.3434935980126631 \\    
  \hline
- 5 & Red-Vented Bulbul & 0.31822126589610333 \\    
+ 5 & Red-Vented Bulbul & 0.10481746290747133 \\    
  \hline
 \end{tabular}
 \caption{Species wise prediciton probability}
@@ -85,26 +85,26 @@ Train-Test Split: 80:20
 
 \begin{verbatim}                   precision    recall  f1-score   support
 
-         Blue Jay       0.07      0.08      0.07        12
-       Grey Heron       0.31      0.33      0.32        12
-   Indian Peafowl       0.33      0.25      0.29        12
-     Little Egret       0.27      0.25      0.26        12
-Red-Vented Bulbul       0.25      0.25      0.25        12
+         Blue Jay       0.17      0.08      0.11        12
+       Grey Heron       0.20      0.25      0.22        12
+   Indian Peafowl       0.38      0.25      0.30        12
+     Little Egret       0.35      0.50      0.41        12
+Red-Vented Bulbul       0.36      0.42      0.38        12
 
-         accuracy                           0.23        60
-        macro avg       0.25      0.23      0.24        60
-     weighted avg       0.25      0.23      0.24        60
+         accuracy                           0.30        60
+        macro avg       0.29      0.30      0.29        60
+     weighted avg       0.29      0.30      0.29        60
 \end{verbatim}
 \newpage
 \noindent \textbf{Confusion Matrix:}
 
 \begin{figure}[h!]
 \centering
-\includegraphics[width=100mm]{/home/sarvam/Documents/cs_699/CS_699/report/images/output.jpg}
+\includegraphics[width=100mm]{models/trained_models/SVM/conf.jpg}
 \end{figure}
 \noindent \textbf{Accuracy Plot:}
 \begin{figure}[h!]
 \centering
-\includegraphics[width=100mm]{/home/sarvam/Documents/cs_699/CS_699/report/images/model_plot.jpg}
+\includegraphics[width=100mm]{models/trained_models/SVM/accuracy.png}
 \end{figure}
 \end{document}

@@ -5,6 +5,7 @@ import pickle
 from sklearn.metrics import classification_report, confusion_matrix
 import matplotlib.pyplot as plt
 from mlxtend.plotting import heatmap
+from pathlib import Path
 
 
 def flatten_image(image: Image) -> np.ndarray:
@@ -30,6 +31,7 @@ def flatten_image(image: Image) -> np.ndarray:
     else:
         raise Exception("Image is None. Expected a valid Image object.")
 
+
 def load_flattened_data(folder_path: str, species: list, split: str = 'train') -> tuple:
     """
     Load flattened images and their corresponding labels from the specified folder.
@@ -46,13 +48,14 @@ def load_flattened_data(folder_path: str, species: list, split: str = 'train') -
     labels = []
 
     for type in species:
-        for filename in os.listdir(os.path.join(folder_path, type, split)):
+        for filename in os.listdir(os.path.join(folder_path, split, type)):
             if filename.endswith(".jpg"):
-                img = Image.open(os.path.join(folder_path, type, split, filename))
+                img = Image.open(os.path.join(folder_path, split, type, filename))
                 images.append(flatten_image(img))  # Flatten and append the processed image
                 labels.append(type)  # Append the corresponding label
 
     return np.array(images), np.array(labels)
+
 
 def get_classifier_report(X_test: np.ndarray, y_test: np.ndarray, species: list, model_path: str,
                           save_conf_matrix_path: str) -> str:
@@ -94,10 +97,11 @@ def load_model(model_path: str):
     Returns:
     - object: Trained classifier model.
     """
-    with open(model_path, 'rb') as f:
+    with open(Path(model_path) / 'model.pkl', 'rb') as f:
         classifier = pickle.load(f)
 
         return classifier
+
 
 def save_model(model_path: str, classifier):
     """
@@ -107,5 +111,8 @@ def save_model(model_path: str, classifier):
     - model_path (str): Path to save the trained model file.
     - classifier: Trained classifier model.
     """
-    with open(model_path, 'wb') as f:
+    model_path = Path(model_path)
+    if not model_path.exists():
+        model_path.mkdir(parents=True)
+    with open(Path(model_path) / 'model.pkl', 'wb') as f:
         pickle.dump(classifier, f)

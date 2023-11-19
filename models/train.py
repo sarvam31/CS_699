@@ -1,9 +1,10 @@
-from utils import load_flattened_data
-from classifier import *
+from .utils import load_flattened_data
+from .classifier import *
+import os
 
-X_train, y_train = load_flattened_data(DATA_PATH, SPECIES, split = 'train')
+DATA_PATH = os.path.join(os.getcwd(), 'processed')
+TRAINED_MODELS_PATH = Path('.') / 'models' / 'trained_models'
 
-TRAINED_MODELS_PATH = os.path.join(os.getcwd(), 'models/trained_models')
 
 def main() -> None:
     """Trains Random Forest and SVM classifiers and saves the models.
@@ -11,10 +12,17 @@ def main() -> None:
     Raises:
     - Any exceptions that might occur during training.
     """
-    train_RF_classifier(X_train, y_train, TRAINED_MODELS_PATH)
-    train_SVM_classifier(X_train, y_train, TRAINED_MODELS_PATH)
-    # train_CNN_classifier(X_train, y_train, trained_models_path)
+    rf = ClassifierRF(DATA_PATH)
+    rf.train()
+    print(rf.get_classifier_report(rf.model_path))
 
+    svm = ClassifierSVM(DATA_PATH)
+    svm.train()
+    print(svm.get_classifier_report(svm.model_path))
+
+    cnn = ClassifierCNN(DATA_PATH)
+    cnn.train()
+    print(cnn.get_classifier_report(cnn.model_path))
 
 
 if __name__ == "__main__":

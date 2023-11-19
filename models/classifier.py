@@ -1,67 +1,297 @@
+import pickle
+
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report, confusion_matrix
+from mlxtend.plotting import heatmap
+
 from sklearn.svm import SVC
-import models.utils as utils
-import os
 from models.utils import save_model
+import models.utils as utils
 import numpy as np
+
+from pathlib import Path
+from abc import abstractmethod
+
+from tensorflow import keras
+import matplotlib.pyplot as plt
 
 SPECIES = ['Blue Jay', 'Grey Heron', 'Indian Peafowl', 'Little Egret', 'Red-Vented Bulbul']
 
 CLASSIFIERS = {
-    'Random Forest' : 'randomforestclassifier.pkl',
-    'SVM' : 'svmclassifier.pkl',
-    'CNN' : 'cnnclassifier.pkl' }
+    'Random Forest': 'Random Forest',
+    'SVM': 'SVM',
+    'CNN': 'CNN'}
 
 
-DATA_PATH = os.path.join(os.getcwd(), 'processed') 
+class MyClassifier:
+    TRAINED_MODELS_PATH = Path('.') / 'models' / 'trained_models'
 
-X_train, y_train = utils.load_flattened_data(DATA_PATH, SPECIES, split = 'train')
+    def __init__(self, dir_data, model_type):
+        self.DATA_PATH = Path(dir_data)
+        self.BATCH_SIZE = 32
+        self.IMAGE_SIZE = (512, 512)
+        self.name = model_type
+        self.model = None
+        self.model_type = model_type
+        if model_type == 'Random Forest' or model_type == 'SVM':
+            self.X_train, self.y_train = utils.load_flattened_data(dir_data, SPECIES, split='train')
+            self.X_test, self.y_test = utils.load_flattened_data(dir_data, SPECIES, split='test')
+            self.CLASSES = SPECIES
+        else:
+            self.ds_train, self.ds_val = keras.utils.image_dataset_from_directory(
+                directory=self.DATA_PATH / 'train',
+                label_mode='categorical',
+                batch_size=self.BATCH_SIZE,
+                image_size=self.IMAGE_SIZE,
+                validation_split=0.2,
+                subset='both',
+                seed=4,
+            )
+            self.ds_test = keras.utils.image_dataset_from_directory(
+                directory=self.DATA_PATH / 'test',
+                label_mode='categorical',
+                batch_size=self.BATCH_SIZE,
+                image_size=self.IMAGE_SIZE,
+            )
+            self.CLASSES = self.ds_train.class_names
+        self.model_path = MyClassifier.TRAINED_MODELS_PATH / CLASSIFIERS[model_type]
 
-TRAINED_MODELS_PATH = os.path.join(os.getcwd(), 'models/trained_models')
+    @abstractmethod
+    def train(self, save_model_path) -> None:
+        """
+        Implement method to train classifier
+        """
+        pass
 
-def train_RF_classifier(X_train: np.ndarray, y_train: np.ndarray, save_model_path: str):
-    """
-    Train a Random Forest classifier.
+    @abstractmethod
+    def test(self) -> tuple:
+        """
+        Returns prediction on test data
+        :return: (true_y, pred_y)
+        """
+        pass
 
-    Parameters:
-    - X_train (np.ndarray): Training data.
-    - y_train (np.ndarray): Training labels.
-    - save_model_path (str): Path to save the trained model file.
-    """
-    classifier = RandomForestClassifier()  # Initialize Random Forest classifier
-    classifier.fit(X_train, y_train)  # Train the classifier
-    save_model(os.path.join(save_model_path, CLASSIFIERS['Random Forest']), classifier)  # Save the trained model
+    @staticmethod
+    @abstractmethod
+    def load(model_path):
+        """
+        Load the model.
+        :param model_path: path to the model
+        :return: object of model
+        """
+        pass
 
-    print('Random forest classifier training complete')  # Display completion message
+    @staticmethod
+    @abstractmethod
+    def predict(model_path, X):
+        """
+        Implement method to return prediction on X
+        :param model_path: path to the model
+        :param X: input to the model
+        :return: prediction
+        """
+        pass
 
+    @staticmethod
+    def _get_classifier_report(y_true, y_pred, target_labels, save_conf_matrix_path):
+        report = classification_report(y_true, y_pred)  # Generate the classification report
 
-def train_SVM_classifier(X_train: np.ndarray, y_train: np.ndarray, save_model_path: str):
-    """
-    Train an SVM classifier.
+        # Generate and save the confusion matrix plot
+        conf_mat = confusion_matrix(y_true, y_pred)
+        heatmap(conf_mat, column_names=target_labels, row_names=target_labels, figsize=(20, 20), cmap="BuPu")
 
-    Parameters:
-    - X_train (np.ndarray): Training data.
-    - y_train (np.ndarray): Training labels.
-    - save_model_path (str): Path to save the trained model file.
-    """
-    classifier = SVC(probability=True)  # Initialize SVM classifier
-    classifier.fit(X_train, y_train)  # Train the classifier
-    save_model(os.path.join(save_model_path, CLASSIFIERS['SVM']), classifier)  # Save the trained model
+        fig = plt.gcf()  # Get the current figure
+        plt.figure()
+        fig.savefig(save_conf_matrix_path)  # Save the confusion matrix plot
 
-    print('SVM classifier training complete')  # Display completion message
-
-    
-
-# def train_CNN_classifier(X_train, y_train, save_model_path):
-
-#     classifier = CNN_classifier()
-
-#     with open(os.path.join(save_model_path, "cnnclassifier.pkl"), 'wb') as f:
-#         pickle.dump(classifier, f)
-
-
-
-
-
+        return report  # Return the classification report
 
 
+class ClassifierSVM(MyClassifier):
+
+    def __init__(self, dir_data):
+        super().__init__(dir_data, 'SVM')
+
+    def train(self, save_model_path=None) -> None:
+        classifier = SVC(probability=True)  # Initialize SVM classifier
+        classifier.fit(self.X_train, self.y_train)  # Train the classifier
+        save_model(save_model_path if save_model_path else self.model_path, classifier)  # Save the trained model
+        self.model = classifier
+        self.test()
+
+    def test(self) -> tuple:
+        y_bar = self.model.predict(self.X_test)
+
+        with open(self.model_path / 'test_run.bin', 'wb') as f:
+            pickle.dump((self.y_test, y_bar), f)
+        return self.y_test, y_bar
+
+    @staticmethod
+    def load(model_path):
+        return utils.load_model(model_path)  # Load the trained model
+
+    @staticmethod
+    def predict(model_path, img):
+        classifier = ClassifierSVM.load(model_path)
+        classifier_input = utils.flatten_image(img)
+        classifier_input = classifier_input.reshape(1, classifier_input.shape[0])
+        return classifier.predict(classifier_input), classifier.predict_proba(classifier_input)
+
+    @staticmethod
+    def get_classifier_report(model_path):
+        with open(model_path / 'test_run.bin', 'rb') as f:
+            (y_true, y_pred) = pickle.load(f)
+        if (model_path / 'cls_report.txt').exists() and (model_path / 'conf.jpg').exists():
+            with open(model_path / 'cls_report.txt', 'r') as f:
+                return f.read()
+        else:
+            report = MyClassifier._get_classifier_report(y_true, y_pred, SPECIES, model_path / 'conf.jpg')
+            with open(model_path / 'cls_report.txt', 'w') as f:
+                f.write(report)
+            return report
+
+
+class ClassifierRF(MyClassifier):
+
+    def __init__(self, dir_data):
+        super().__init__(dir_data, 'Random Forest')
+
+    def train(self, save_model_path=None) -> None:
+        classifier = RandomForestClassifier()  # Initialize Random Forest classifier
+        classifier.fit(self.X_train, self.y_train)  # Train the classifier
+        save_model(save_model_path if save_model_path else self.model_path, classifier)  # Save the trained model
+        self.model = classifier
+        self.test()
+
+    def test(self) -> tuple:
+        y_bar = self.model.predict(self.X_test)
+
+        with open(self.model_path / 'test_run.bin', 'wb') as f:
+            pickle.dump((self.y_test, y_bar), f)
+        return self.y_test, y_bar
+
+    @staticmethod
+    def load(model_path):
+        return utils.load_model(model_path)  # Load the trained model
+
+    @staticmethod
+    def predict(model_path, img):
+        classifier = ClassifierSVM.load(model_path)
+        classifier_input = utils.flatten_image(img)
+        classifier_input = classifier_input.reshape(1, classifier_input.shape[0])
+        return classifier.predict(classifier_input), classifier.predict_proba(classifier_input)
+
+    @staticmethod
+    def get_classifier_report(model_path):
+        with open(model_path / 'test_run.bin', 'rb') as f:
+            (y_true, y_pred) = pickle.load(f)
+        if (model_path / 'cls_report.txt').exists() and (model_path / 'conf.jpg').exists():
+            with open(model_path / 'cls_report.txt', 'r') as f:
+                return f.read()
+        else:
+            report = MyClassifier._get_classifier_report(y_true, y_pred, SPECIES, model_path / 'conf.jpg')
+            with open(model_path / 'cls_report.txt', 'w') as f:
+                f.write(report)
+            return report
+
+
+class ClassifierCNN(MyClassifier):
+
+    def __init__(self, dir_data):
+        super().__init__(dir_data, 'CNN')
+
+    def train(self, epochs=5, save_model_path=None) -> None:
+        input_shape = self.IMAGE_SIZE + (3,)
+        base_model = keras.applications.EfficientNetV2M(
+            include_top=False,
+            weights='imagenet',
+            input_shape=input_shape,
+        )
+        base_model.trainable = False
+        inputs = keras.Input(shape=input_shape)
+        x = base_model(inputs, training=False)
+        x = keras.layers.GlobalAveragePooling2D()(x)
+        x = keras.layers.Dense(len(self.CLASSES))(x)
+        outputs = keras.layers.Softmax()(x)
+        model = keras.Model(inputs, outputs)
+        model.compile(optimizer=keras.optimizers.Adam(learning_rate=0.001),
+                      loss=keras.losses.CategoricalCrossentropy(),
+                      metrics=[keras.metrics.CategoricalAccuracy()])
+        history = model.fit(self.ds_train, epochs=epochs, validation_data=self.ds_val)
+
+        self.model = model
+        self.model.save(self.model_path)
+
+        self.plot(history)
+        self.test()
+
+        with open(self.model_path / 'labels.bin', 'wb') as f:
+            pickle.dump(self.CLASSES, f)
+        with open(self.model_path / 'history.bin', 'wb') as f:
+            pickle.dump(history, f)
+
+        return history
+
+    def plot(self, history):
+        # accuracy plot
+        plt.plot(history.history['categorical_accuracy'])
+        plt.plot(history.history['val_categorical_accuracy'])
+        plt.title('accuracy plot')
+        plt.ylabel('accuracy')
+        plt.xlabel('epoch')
+        plt.legend(['train', 'val'], loc='upper left')
+        plt.savefig(self.model_path / 'accuracy.png', bbox_inches='tight')
+        plt.close()
+
+        # loss plot
+        plt.plot(history.history['loss'])
+        plt.plot(history.history['val_loss'])
+        plt.title('loss plot')
+        plt.ylabel('loss')
+        plt.xlabel('epoch')
+        plt.legend(['train', 'val'], loc='upper left')
+        plt.savefig(self.model_path / 'loss.png', bbox_inches='tight')
+        plt.close()
+
+    def test(self):
+        y = np.concatenate([y for x, y in self.ds_test], axis=0)
+        y = np.argmax(y, axis=1)
+
+        pred = self.model.predict(self.ds_test)
+        y_bar = np.argmax(pred, axis=1)
+
+        with open(self.model_path / 'test_run.bin', 'wb') as f:
+            pickle.dump((y, y_bar), f)
+        return y, y_bar
+
+    @staticmethod
+    def load(model_path) -> keras.Model:
+        return keras.models.load_model(model_path)
+
+    @staticmethod
+    def predict(model_path, img):
+        model = ClassifierCNN.load(model_path)
+        with open(Path(model_path) / 'labels.bin', 'rb') as f:
+            classes = pickle.load(f)
+        np_image = np.array(img).astype('float32') / 255
+        np_image = np.expand_dims(np_image, axis=0)
+        preds = model.predict(np_image)
+        preds_label = np.argmax(preds, axis=1)
+        return [classes[pred_label] for pred_label in preds_label], preds
+
+    @staticmethod
+    def get_classifier_report(model_path):
+        model_path = Path(model_path)
+        with open(model_path / 'test_run.bin', 'rb') as f:
+            (y_true, y_pred) = pickle.load(f)
+        with open(model_path / 'labels.bin', 'rb') as f:
+            classes = pickle.load(f)
+
+        if (model_path / 'cls_report.txt').exists() and (model_path / 'conf.jpg').exists():
+            with open(model_path / 'cls_report.txt', 'r') as f:
+                return f.read()
+        else:
+            report = MyClassifier._get_classifier_report(y_true, y_pred, classes, model_path / 'conf.jpg')
+            with open(model_path / 'cls_report.txt', 'w') as f:
+                f.write(report)
+            return report

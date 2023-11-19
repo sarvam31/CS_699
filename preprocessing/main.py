@@ -6,7 +6,7 @@ from pathlib import Path
 from shutil import move
 
 from PIL import Image, ImageOps
-from random import shuffle
+from random import seed, shuffle
 from math import floor
 
 FLAGS = flags.FLAGS
@@ -34,37 +34,41 @@ def train_test_split(dir_src, split):
     def _move(f, dest):
         move(f, dest / f.parts[-1])
 
-    for dir_specie in dir_src.glob('*'):
+    for dir_specie in (dir_src / 'tmp').glob('*'):
         if not dir_specie.is_dir():
             continue
-        dir_train, dir_test = dir_specie / 'train', dir_specie / 'test'
-        os.mkdir(dir_train)
-        os.mkdir(dir_test)
+        dir_train, dir_test = dir_src / 'train' / dir_specie.parts[-1], dir_src / 'test' / dir_specie.parts[-1]
+        dir_train.mkdir(parents=True)
+        dir_test.mkdir(parents=True)
         images = list(dir_specie.glob('*.jpg'))
+        seed(44)
         shuffle(images)
         split_idx = floor(len(images) * split)
         train, test = images[:split_idx], images[split_idx:]
         [_move(f, dir_train) for f in train]
         [_move(f, dir_test) for f in test]
+        dir_specie.rmdir()
 
 
 def _main(dir_src, dir_dest, split):
     if not dir_dest.exists():
-        os.mkdir(dir_dest)
+        dir_dest.mkdir(parents=True)
 
     for dir_specie in dir_src.glob('*'):
         if not dir_specie.is_dir():
             continue
-        dir_specie_dest = dir_dest / dir_specie.parts[-1]
+        dir_specie_dest = dir_dest / 'tmp' / dir_specie.parts[-1]
         if not dir_specie_dest.exists():
-            os.mkdir(dir_specie_dest)
+            dir_specie_dest.mkdir(parents=True)
         for p_img in dir_specie.glob('*.jpg'):
             img = Image.open(p_img)
             file_name = p_img.parts[-1]
             img = process(img)
+            img.verify()
             img.save(dir_specie_dest / file_name)
 
     train_test_split(dir_dest, split)
+    (dir_dest / 'tmp').rmdir()
 
 
 def main(argv):

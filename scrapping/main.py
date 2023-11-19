@@ -25,13 +25,10 @@ def _main(species, base_path: Path, wait_time=2, scrap_factor=2, num_threads=5):
         specie = specie.strip()
         logging.info(f"{i} {specie}")
         path_specie = base_path / specie
-
-        # TODO: create base path directory
-        
         logging.info(f"Is directory {str(path_specie)} exists: {path_specie.exists()}")
         if not path_specie.exists():
             logging.info(f"Creating directory {path_specie}")
-            os.mkdir(path_specie)
+            path_specie.mkdir(parents=True)
         logging.info(f"Started scrapping of {specie} images")
         find_images(specie, path_specie, wait_time=wait_time, show_more=scrap_factor, num_threads=num_threads)
     logging.info(f"Overall execution time {time.time() - t_s}")

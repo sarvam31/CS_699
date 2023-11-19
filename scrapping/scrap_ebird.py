@@ -3,6 +3,7 @@ from absl import logging
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver import ChromeOptions
 
 from pathlib import Path
 import time
@@ -14,7 +15,9 @@ URL_BASE = "https://ebird.org/explore"
 
 def find_images(specie, path_dir: Path, wait_time=2, show_more=5, num_threads=5):
     t_s = time.time()
-    with webdriver.Chrome() as driver:
+    options = ChromeOptions()
+    # options.add_argument("--headless=new")
+    with webdriver.Chrome(options=options) as driver:
         driver.get(URL_BASE)
         driver.maximize_window()
 
@@ -42,6 +45,8 @@ def find_images(specie, path_dir: Path, wait_time=2, show_more=5, num_threads=5)
             driver.find_element(By.CSS_SELECTOR, ".pagination > .Button").click()
 
         logging.info("Handing over the page source")
+        with open(path_dir / 'page_src.log', 'w') as f:
+            f.write(driver.page_source)
         play(driver.page_source, path_dir, num_threads=num_threads)
 
     logging.info(f"Execution time {time.time() - t_s}")

@@ -1,13 +1,17 @@
 import os
+import sys
 import subprocess
 
 import matplotlib.pyplot as plt
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
-from models.classifier import *
-from preprocessing.main import process
-from models.utils import *
 
+sys.path.append(os.path.abspath('.'))
+
+from models.train import TRAINED_MODELS_PATH, DATA_PATH
+from models.classifier import *
+from models.utils import *
+from preprocessing.main import process
 
 # Constants defining file paths and commands
 MAIN_TEX: str = os.path.join(os.getcwd(), 'report/main_template.tex')
@@ -18,10 +22,18 @@ SAVE_CONF_MATRIX_PATH: str = os.path.join(TEX_IMAGES_PATH, 'output.jpg')
 MODEL_PLOT_PATH: str = os.path.join(TEX_IMAGES_PATH, 'model_plot.jpg')
 COMMAND: str = 'pdflatex -output-directory ' + os.path.join(os.getcwd(), 'output') + ' ' + OUTPUT_TEX
 
+models = {
+    'Random Forest': ClassifierRF,
+    'SVM': ClassifierSVM,
+    'CNN': ClassifierCNN
+}
+
+
 def load_file(path):
     """Loads and returns the contents of a file."""
     with open(path, 'r') as file:
         return "".join(file.readlines())
+
 
 def generate_report(selected_model, img):
     """Generates a report based on the selected model and image.
@@ -34,41 +46,29 @@ def generate_report(selected_model, img):
     - Exception: If unable to generate the report PDF.
     """
     # Construct the path to the selected model
-    model_path = os.path.join(TRAINED_MODELS_PATH, CLASSIFIERS[selected_model])
-
-    # Load the selected model
-    classifier = load_model(model_path)
-
+    model_path = Path(os.path.join(TRAINED_MODELS_PATH, CLASSIFIERS[selected_model]))
     # Process the input image
     processed_img = process(img)
 
-    # Flatten and reshape image input based on the selected model type
-    if selected_model in ['Random Forest', 'SVM']:
-        classifier_input = flatten_image(processed_img)
-        classifier_input = classifier_input.reshape(1, classifier_input.shape[0])
-    else:
-        # handle image process for cnn model
-        pass
-
-    # Load test data
-    X_test, y_test = load_flattened_data(DATA_PATH, SPECIES, split='test')
-
-    # Generate respective plots based on the selected model
-    if selected_model == 'Random Forest':
-        generate_rf_plot(X_test, y_test, MODEL_PLOT_PATH)
-    elif selected_model == 'SVM':
-        generate_svm_plot(X_test, y_test, MODEL_PLOT_PATH)
-    else:
-        generate_cnn_plot(X_test, y_test, MODEL_PLOT_PATH)
-
-    # Predict the class of the input image
-    predicted_class = classifier.predict(classifier_input)
-
-    # Get probability scores for each class
-    prob_scores = classifier.predict_proba(classifier_input)
+    model = models[selected_model]
+    predicted_class, prob_scores = model.predict(model_path, img)
+    print(predicted_class, prob_scores, sep='\n')
 
     # Generate classifier report and confusion matrix
-    classifier_report = get_classifier_report(X_test, y_test, SPECIES, model_path, SAVE_CONF_MATRIX_PATH)
+    classifier_report = model.get_classifier_report(model_path)
+    print(classifier_report)
+
+    # if selected_model == 'CNN':
+    #     handle_cnn(model_path, processed_img)
+    #     return
+
+    # Generate respective plots based on the selected model
+    # if selected_model == 'Random Forest':
+    #     generate_rf_plot(X_test, y_test, MODEL_PLOT_PATH)
+    # elif selected_model == 'SVM':
+    #     generate_svm_plot(X_test, y_test, MODEL_PLOT_PATH)
+    # else:
+    #     generate_cnn_plot(X_test, y_test, MODEL_PLOT_PATH)
 
     # Load the LaTeX main template file
     tex_code = load_file(MAIN_TEX)
@@ -84,8 +84,8 @@ def generate_report(selected_model, img):
         'probscore5': prob_scores[0][4],
         'sklearnreport': classifier_report,
         'bird_test': BIRD_IMAGE_PATH,
-        'conf_matrix': SAVE_CONF_MATRIX_PATH,
-        'accu_plot': MODEL_PLOT_PATH
+        'conf_matrix': model_path / 'conf.jpg',
+        'accu_plot': model_path / 'accuracy.png'
     }
 
     # Save the bird image
@@ -170,7 +170,6 @@ def generate_svm_plot(X_test, y_test, model_plot_path):
     fig.savefig(model_plot_path)
 
 
-
 def generate_cnn_plot(X_test, y_test, model_plot_path):
     """Generates a plot for CNN (Convolutional Neural Network) accuracy (to be implemented).
 
@@ -181,15 +180,6 @@ def generate_cnn_plot(X_test, y_test, model_plot_path):
     """
     pass
 
-img = Image.open('/home/sarvam/Documents/cs_699/CS_699/data/Blue Jay/47351251.jpg')
+
+img = Image.open('data/Little Egret/61001311.jpg')
 generate_report('SVM', img)
-
-
-
-
-
-
-    
-
-
-
