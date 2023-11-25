@@ -4,3 +4,5 @@ data/
 models/trained_models
 __pycache__/
 *.pkl
+output/
+tmp/

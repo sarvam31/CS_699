@@ -2,10 +2,13 @@
 \providecommand\hyper@newdestlabel[2]{}
 \providecommand\HyperFirstAtBeginDocument{\AtBeginDocument}
 \HyperFirstAtBeginDocument{\ifx\hyper@anchor\@undefined
+\global\let\oldcontentsline\contentsline
+\gdef\contentsline#1#2#3#4{\oldcontentsline{#1}{#2}{#3}}
 \global\let\oldnewlabel\newlabel
 \gdef\newlabel#1#2{\newlabelxx{#1}#2}
 \gdef\newlabelxx#1#2#3#4#5#6{\oldnewlabel{#1}{{#2}{#3}}}
 \AtEndDocument{\ifx\hyper@anchor\@undefined
+\let\contentsline\oldcontentsline
 \let\newlabel\oldnewlabel
 \fi}
 \fi}
@@ -16,7 +19,7 @@
 \@writefile{toc}{\contentsline {section}{\numberline {1}Image Classification}{1}{section.1}\protected@file@percent }
 \providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
 \newlabel{fig:method}{{\caption@xref {fig:method}{ on input line 25}}{1}{Image Classification}{figure.caption.1}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Species wise prediciton probability\relax }}{2}{table.caption.2}\protected@file@percent }
-\newlabel{table:data}{{1}{2}{Species wise prediciton probability\relax }{table.caption.2}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Species wise prediciton probability\relax }}{1}{table.caption.2}\protected@file@percent }
+\newlabel{table:data}{{1}{1}{Species wise prediciton probability\relax }{table.caption.2}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {2}Model Report}{2}{section.2}\protected@file@percent }
 \gdef \@abspage@last{3}

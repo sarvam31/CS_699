@@ -2,7 +2,7 @@ import os
 import sys
 import subprocess
 
-sys.path.append(os.path.abspath('.'))
+sys.path.insert(1, os.getcwd())
 
 from models.train import TRAINED_MODELS_PATH
 from models.classifier import *
@@ -55,18 +55,6 @@ def generate_report(selected_model, img_file):
     classifier_report = model.get_classifier_report(model_path)
     print(classifier_report)
 
-    # if selected_model == 'CNN':
-    #     handle_cnn(model_path, processed_img)
-    #     return
-
-    # Generate respective plots based on the selected model
-    # if selected_model == 'Random Forest':
-    #     generate_rf_plot(X_test, y_test, MODEL_PLOT_PATH)
-    # elif selected_model == 'SVM':
-    #     generate_svm_plot(X_test, y_test, MODEL_PLOT_PATH)
-    # else:
-    #     generate_cnn_plot(X_test, y_test, MODEL_PLOT_PATH)
-
     # Load the LaTeX main template file
     tex_code = load_file(MAIN_TEX)
 
@@ -74,11 +62,11 @@ def generate_report(selected_model, img_file):
     data = {
         'modelpredictedspecies': predicted_class[0],
         'classifiername': selected_model,
-        'probscore1': prob_scores[0][0],
-        'probscore2': prob_scores[0][1],
-        'probscore3': prob_scores[0][2],
-        'probscore4': prob_scores[0][3],
-        'probscore5': prob_scores[0][4],
+        'probscore1': "{:.2f}".format(prob_scores[0][0]),
+        'probscore2': "{:.2f}".format(prob_scores[0][1]),
+        'probscore3': "{:.2f}".format(prob_scores[0][2]),
+        'probscore4': "{:.2f}".format(prob_scores[0][3]),
+        'probscore5': "{:.2f}".format(prob_scores[0][4]),
         'sklearnreport': classifier_report,
         'bird_test': BIRD_IMAGE_PATH,
         'conf_matrix': model_path / 'conf.jpg',
@@ -102,81 +90,9 @@ def generate_report(selected_model, img_file):
     # Print the output
     if f'Output written on {OUTPUT_TEX}'.replace('.tex', '.pdf') not in output.stdout:
         raise Exception('Unable to generate report pdf')
+    else:
+        return predicted_class
 
-
-#
-# def generate_rf_plot(X_test, y_test, model_plot_path):
-#     """Generates a plot depicting Random Forest accuracy over the number of trees.
-#
-#     Args:
-#     - X_test (np.ndarray): Test features.
-#     - y_test (np.ndarray): Test labels.
-#     - model_plot_path (str): Path to save the generated plot.
-#     """
-#     # List to store accuracy values
-#     accuracy_values = []
-#
-#     # Training Random Forest with different numbers of trees
-#     for n_trees in range(1, 101):
-#         rf_model = RandomForestClassifier(n_estimators=n_trees, random_state=42)
-#         rf_model.fit(X_test, y_test)
-#         accuracy = rf_model.score(X_test, y_test)
-#         accuracy_values.append(accuracy)
-#
-#     # Plotting accuracy over the number of trees
-#     plt.plot(range(1, 101), accuracy_values, marker='o')
-#     plt.title('Random Forest Accuracy over Number of Trees')
-#     plt.xlabel('Number of Trees')
-#     plt.ylabel('Accuracy')
-#
-#     # Save the generated plot
-#     fig = plt.gcf()
-#     plt.figure()
-#     fig.savefig(model_plot_path)
-#
-#
-# def generate_svm_plot(X_test, y_test, model_plot_path):
-#     """Generates a plot depicting SVM accuracy over different values of the regularization parameter (C).
-#
-#     Args:
-#     - X_test (np.ndarray): Test features.
-#     - y_test (np.ndarray): Test labels.
-#     - model_plot_path (str): Path to save the generated plot.
-#     """
-#     # Different values of C to test
-#     C_values = [0.001, 0.01, 0.1, 1, 10, 100]
-#     accuracy_values = []
-#
-#     # Iterating through different C values
-#     for C in C_values:
-#         svm_model = SVC(kernel='rbf', C=C, random_state=42)
-#         svm_model.fit(X_test, y_test)
-#         accuracy = svm_model.score(X_test, y_test)
-#         accuracy_values.append(accuracy)
-#
-#     # Plotting accuracy over different C values
-#     plt.plot(C_values, accuracy_values, marker='o')
-#     plt.xscale('log')  # Log scale for better visualization of C values
-#     plt.title('SVM Accuracy over Different C Values (Linear Kernel)')
-#     plt.xlabel('C (Regularization Parameter)')
-#     plt.ylabel('Accuracy')
-#     plt.grid(True)
-#
-#     # Save the generated plot
-#     fig = plt.gcf()
-#     plt.figure()
-#     fig.savefig(model_plot_path)
-#
-#
-# def generate_cnn_plot(X_test, y_test, model_plot_path):
-#     """Generates a plot for CNN (Convolutional Neural Network) accuracy (to be implemented).
-#
-#     Args:
-#     - X_test (np.ndarray): Test features.
-#     - y_test (np.ndarray): Test labels.
-#     - model_plot_path (str): Path to save the generated plot.
-#     """
-#     pass
 
 
 if __name__ == '__main__':
