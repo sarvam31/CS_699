@@ -1,24 +1,26 @@
+# Importing necessary libraries
 from absl import app
 from absl import flags
-
 import os
 from pathlib import Path
 from shutil import move
-
 from PIL import Image, ImageOps
 from random import seed, shuffle
 from math import floor
 
+# Defining command-line flags
 FLAGS = flags.FLAGS
 flags.DEFINE_string("src_dir", None, "Source directory where images are stored.")
 flags.DEFINE_string("dest_dir", None, "Destination directory to store processed images.")
 flags.DEFINE_string("train_split", None, "Train split. [0-1]")
 
-# Required flags
+# Marking required flags
 flags.mark_flags_as_required(["src_dir", "dest_dir", "train_split"])
 
 
+# Function to resize and pad an image
 def process(img: Image, size=(512, 512)) -> Image:
+    # Convert image to RGB if it's in RGBA or P mode
     if img.mode in ("RGBA", "P"):
         img = img.convert("RGB")
     img.thumbnail(size)
@@ -30,6 +32,7 @@ def process(img: Image, size=(512, 512)) -> Image:
     return ImageOps.expand(img, padding)
 
 
+# Function to split images into train and test sets
 def train_test_split(dir_src, split):
     def _move(f, dest):
         move(f, dest / f.parts[-1])
@@ -50,10 +53,12 @@ def train_test_split(dir_src, split):
         dir_specie.rmdir()
 
 
+# Main function for processing images
 def _main(dir_src, dir_dest, split):
     if not dir_dest.exists():
         dir_dest.mkdir(parents=True)
 
+    # Loop through source directory, process and move images
     for dir_specie in dir_src.glob('*'):
         if not dir_specie.is_dir():
             continue
@@ -67,14 +72,18 @@ def _main(dir_src, dir_dest, split):
             img.verify()
             img.save(dir_specie_dest / file_name)
 
+    # Split processed images into train and test sets
     train_test_split(dir_dest, split)
     (dir_dest / 'tmp').rmdir()
 
 
+# Main function for command-line execution
 def main(argv):
     del argv
     _main(Path(FLAGS.src_dir), Path(FLAGS.dest_dir), float(FLAGS.train_split))
 
 
+# Execute main function
 if __name__ == "__main__":
     app.run(main)
+

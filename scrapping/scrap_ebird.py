@@ -14,6 +14,8 @@ URL_BASE = "https://ebird.org/explore"
 
 
 def find_images(specie, path_dir: Path, wait_time=2, show_more=5, num_threads=5):
+    # Function to find and scrape images of a given species from eBird
+    
     t_s = time.time()
     options = ChromeOptions()
     # options.add_argument("--headless=new")
