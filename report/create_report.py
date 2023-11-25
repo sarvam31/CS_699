@@ -2,13 +2,9 @@ import os
 import sys
 import subprocess
 
-import matplotlib.pyplot as plt
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.svm import SVC
-
 sys.path.append(os.path.abspath('.'))
 
-from models.train import TRAINED_MODELS_PATH, DATA_PATH
+from models.train import TRAINED_MODELS_PATH
 from models.classifier import *
 from models.utils import *
 from preprocessing.main import process
@@ -108,78 +104,79 @@ def generate_report(selected_model, img_file):
         raise Exception('Unable to generate report pdf')
 
 
-def generate_rf_plot(X_test, y_test, model_plot_path):
-    """Generates a plot depicting Random Forest accuracy over the number of trees.
-
-    Args:
-    - X_test (np.ndarray): Test features.
-    - y_test (np.ndarray): Test labels.
-    - model_plot_path (str): Path to save the generated plot.
-    """
-    # List to store accuracy values
-    accuracy_values = []
-
-    # Training Random Forest with different numbers of trees
-    for n_trees in range(1, 101):
-        rf_model = RandomForestClassifier(n_estimators=n_trees, random_state=42)
-        rf_model.fit(X_test, y_test)
-        accuracy = rf_model.score(X_test, y_test)
-        accuracy_values.append(accuracy)
-
-    # Plotting accuracy over the number of trees
-    plt.plot(range(1, 101), accuracy_values, marker='o')
-    plt.title('Random Forest Accuracy over Number of Trees')
-    plt.xlabel('Number of Trees')
-    plt.ylabel('Accuracy')
-
-    # Save the generated plot
-    fig = plt.gcf()
-    plt.figure()
-    fig.savefig(model_plot_path)
-
-
-def generate_svm_plot(X_test, y_test, model_plot_path):
-    """Generates a plot depicting SVM accuracy over different values of the regularization parameter (C).
-
-    Args:
-    - X_test (np.ndarray): Test features.
-    - y_test (np.ndarray): Test labels.
-    - model_plot_path (str): Path to save the generated plot.
-    """
-    # Different values of C to test
-    C_values = [0.001, 0.01, 0.1, 1, 10, 100]
-    accuracy_values = []
-
-    # Iterating through different C values
-    for C in C_values:
-        svm_model = SVC(kernel='rbf', C=C, random_state=42)
-        svm_model.fit(X_test, y_test)
-        accuracy = svm_model.score(X_test, y_test)
-        accuracy_values.append(accuracy)
-
-    # Plotting accuracy over different C values
-    plt.plot(C_values, accuracy_values, marker='o')
-    plt.xscale('log')  # Log scale for better visualization of C values
-    plt.title('SVM Accuracy over Different C Values (Linear Kernel)')
-    plt.xlabel('C (Regularization Parameter)')
-    plt.ylabel('Accuracy')
-    plt.grid(True)
-
-    # Save the generated plot
-    fig = plt.gcf()
-    plt.figure()
-    fig.savefig(model_plot_path)
-
-
-def generate_cnn_plot(X_test, y_test, model_plot_path):
-    """Generates a plot for CNN (Convolutional Neural Network) accuracy (to be implemented).
-
-    Args:
-    - X_test (np.ndarray): Test features.
-    - y_test (np.ndarray): Test labels.
-    - model_plot_path (str): Path to save the generated plot.
-    """
-    pass
+#
+# def generate_rf_plot(X_test, y_test, model_plot_path):
+#     """Generates a plot depicting Random Forest accuracy over the number of trees.
+#
+#     Args:
+#     - X_test (np.ndarray): Test features.
+#     - y_test (np.ndarray): Test labels.
+#     - model_plot_path (str): Path to save the generated plot.
+#     """
+#     # List to store accuracy values
+#     accuracy_values = []
+#
+#     # Training Random Forest with different numbers of trees
+#     for n_trees in range(1, 101):
+#         rf_model = RandomForestClassifier(n_estimators=n_trees, random_state=42)
+#         rf_model.fit(X_test, y_test)
+#         accuracy = rf_model.score(X_test, y_test)
+#         accuracy_values.append(accuracy)
+#
+#     # Plotting accuracy over the number of trees
+#     plt.plot(range(1, 101), accuracy_values, marker='o')
+#     plt.title('Random Forest Accuracy over Number of Trees')
+#     plt.xlabel('Number of Trees')
+#     plt.ylabel('Accuracy')
+#
+#     # Save the generated plot
+#     fig = plt.gcf()
+#     plt.figure()
+#     fig.savefig(model_plot_path)
+#
+#
+# def generate_svm_plot(X_test, y_test, model_plot_path):
+#     """Generates a plot depicting SVM accuracy over different values of the regularization parameter (C).
+#
+#     Args:
+#     - X_test (np.ndarray): Test features.
+#     - y_test (np.ndarray): Test labels.
+#     - model_plot_path (str): Path to save the generated plot.
+#     """
+#     # Different values of C to test
+#     C_values = [0.001, 0.01, 0.1, 1, 10, 100]
+#     accuracy_values = []
+#
+#     # Iterating through different C values
+#     for C in C_values:
+#         svm_model = SVC(kernel='rbf', C=C, random_state=42)
+#         svm_model.fit(X_test, y_test)
+#         accuracy = svm_model.score(X_test, y_test)
+#         accuracy_values.append(accuracy)
+#
+#     # Plotting accuracy over different C values
+#     plt.plot(C_values, accuracy_values, marker='o')
+#     plt.xscale('log')  # Log scale for better visualization of C values
+#     plt.title('SVM Accuracy over Different C Values (Linear Kernel)')
+#     plt.xlabel('C (Regularization Parameter)')
+#     plt.ylabel('Accuracy')
+#     plt.grid(True)
+#
+#     # Save the generated plot
+#     fig = plt.gcf()
+#     plt.figure()
+#     fig.savefig(model_plot_path)
+#
+#
+# def generate_cnn_plot(X_test, y_test, model_plot_path):
+#     """Generates a plot for CNN (Convolutional Neural Network) accuracy (to be implemented).
+#
+#     Args:
+#     - X_test (np.ndarray): Test features.
+#     - y_test (np.ndarray): Test labels.
+#     - model_plot_path (str): Path to save the generated plot.
+#     """
+#     pass
 
 
 if __name__ == '__main__':

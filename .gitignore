@@ -1,5 +1,6 @@
 .gitignore
 cs699_venv/
 data/
+models/trained_models
 __pycache__/
 *.pkl

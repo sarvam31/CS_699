@@ -1,4 +1,3 @@
-from .utils import load_flattened_data
 from .classifier import *
 import os
 
@@ -14,14 +13,17 @@ def main() -> None:
     """
     rf = ClassifierRF(DATA_PATH)
     rf.train()
+    print('RF training done...')
     print(rf.get_classifier_report(rf.model_path))
 
     svm = ClassifierSVM(DATA_PATH)
     svm.train()
+    print('SVM training done...')
     print(svm.get_classifier_report(svm.model_path))
 
     cnn = ClassifierCNN(DATA_PATH)
     cnn.train()
+    print('CNN training done...')
     print(cnn.get_classifier_report(cnn.model_path))
 
 

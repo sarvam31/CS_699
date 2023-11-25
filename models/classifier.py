@@ -5,8 +5,9 @@ from sklearn.metrics import classification_report, confusion_matrix
 from mlxtend.plotting import heatmap
 
 from sklearn.svm import SVC
-from models.utils import save_model
-import models.utils as utils
+
+from . import utils
+from .utils import save_model
 import numpy as np
 
 from pathlib import Path
@@ -26,7 +27,7 @@ CLASSIFIERS = {
 class MyClassifier:
     TRAINED_MODELS_PATH = Path('.') / 'models' / 'trained_models'
 
-    def __init__(self, dir_data, model_type):
+    def __init__(self, dir_data, model_type, model_path=None):
         self.DATA_PATH = Path(dir_data)
         self.BATCH_SIZE = 32
         self.IMAGE_SIZE = (512, 512)
@@ -54,10 +55,10 @@ class MyClassifier:
                 image_size=self.IMAGE_SIZE,
             )
             self.CLASSES = self.ds_train.class_names
-        self.model_path = MyClassifier.TRAINED_MODELS_PATH / CLASSIFIERS[model_type]
+        self.model_path = model_path if model_path else MyClassifier.TRAINED_MODELS_PATH / CLASSIFIERS[model_type]
 
     @abstractmethod
-    def train(self, save_model_path) -> None:
+    def train(self) -> None:
         """
         Implement method to train classifier
         """
@@ -109,18 +110,41 @@ class MyClassifier:
 
 class ClassifierSVM(MyClassifier):
 
-    def __init__(self, dir_data):
-        super().__init__(dir_data, 'SVM')
+    def __init__(self, dir_data, model_path=None):
+        super().__init__(dir_data, 'SVM', model_path)
 
-    def train(self, save_model_path=None) -> None:
+    def train(self) -> None:
         classifier = SVC(probability=True)  # Initialize SVM classifier
         classifier.fit(self.X_train, self.y_train)  # Train the classifier
-        save_model(save_model_path if save_model_path else self.model_path, classifier)  # Save the trained model
+        save_model(self.model_path, classifier)  # Save the trained model
         self.model = classifier
         self.test()
 
     def test(self) -> tuple:
         y_bar = self.model.predict(self.X_test)
+
+        C_values = [0.001, 0.01, 0.1, 1, 10, 100]
+        accuracy_values = []
+
+        # Iterating through different C values
+        for C in C_values:
+            svm_model = SVC(kernel='rbf', C=C, random_state=42)
+            svm_model.fit(self.X_test, self.y_test)
+            accuracy = svm_model.score(self.X_test, self.y_test)
+            accuracy_values.append(accuracy)
+
+        # Plotting accuracy over different C values
+        plt.plot(C_values, accuracy_values, marker='o')
+        plt.xscale('log')  # Log scale for better visualization of C values
+        plt.title('SVM Accuracy over Different C Values (Linear Kernel)')
+        plt.xlabel('C (Regularization Parameter)')
+        plt.ylabel('Accuracy')
+        plt.grid(True)
+
+        # Save the generated plot
+        fig = plt.gcf()
+        plt.figure()
+        fig.savefig(self.model_path / 'accuracy.png', bbox_inches='tight')
 
         with open(self.model_path / 'test_run.bin', 'wb') as f:
             pickle.dump((self.y_test, y_bar), f)
@@ -153,18 +177,38 @@ class ClassifierSVM(MyClassifier):
 
 class ClassifierRF(MyClassifier):
 
-    def __init__(self, dir_data):
-        super().__init__(dir_data, 'Random Forest')
+    def __init__(self, dir_data, model_path=None):
+        super().__init__(dir_data, 'Random Forest', model_path)
 
-    def train(self, save_model_path=None) -> None:
+    def train(self) -> None:
         classifier = RandomForestClassifier()  # Initialize Random Forest classifier
         classifier.fit(self.X_train, self.y_train)  # Train the classifier
-        save_model(save_model_path if save_model_path else self.model_path, classifier)  # Save the trained model
+        save_model(self.model_path, classifier)  # Save the trained model
         self.model = classifier
         self.test()
 
     def test(self) -> tuple:
         y_bar = self.model.predict(self.X_test)
+
+        accuracy_values = []
+
+        # Training Random Forest with different numbers of trees
+        for n_trees in range(1, 101):
+            rf_model = RandomForestClassifier(n_estimators=n_trees, random_state=42)
+            rf_model.fit(self.X_test, self.y_test)
+            accuracy = rf_model.score(self.X_test, self.y_test)
+            accuracy_values.append(accuracy)
+
+        # Plotting accuracy over the number of trees
+        plt.plot(range(1, 101), accuracy_values, marker='o')
+        plt.title('Random Forest Accuracy over Number of Trees')
+        plt.xlabel('Number of Trees')
+        plt.ylabel('Accuracy')
+
+        # Save the generated plot
+        fig = plt.gcf()
+        plt.figure()
+        fig.savefig(self.model_path / 'accuracy.png', bbox_inches='tight')
 
         with open(self.model_path / 'test_run.bin', 'wb') as f:
             pickle.dump((self.y_test, y_bar), f)
@@ -176,7 +220,7 @@ class ClassifierRF(MyClassifier):
 
     @staticmethod
     def predict(model_path, img):
-        classifier = ClassifierSVM.load(model_path)
+        classifier = ClassifierRF.load(model_path)
         classifier_input = utils.flatten_image(img)
         classifier_input = classifier_input.reshape(1, classifier_input.shape[0])
         return classifier.predict(classifier_input), classifier.predict_proba(classifier_input)
@@ -197,8 +241,8 @@ class ClassifierRF(MyClassifier):
 
 class ClassifierCNN(MyClassifier):
 
-    def __init__(self, dir_data):
-        super().__init__(dir_data, 'CNN')
+    def __init__(self, dir_data, model_path=None):
+        super().__init__(dir_data, 'CNN', model_path)
 
     def train(self, epochs=5, save_model_path=None) -> None:
         input_shape = self.IMAGE_SIZE + (3,)
