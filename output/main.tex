@@ -21,11 +21,11 @@
 \begin{figure}[h!]
 \centering
 \includegraphics[width=100mm]{/Users/smitjivani/Developer/MS_WS/CS699/Project/CS699_Project/report/images/bird_test.jpg}
-\caption*{Prediction: Grey Heron}
+\caption*{Prediction: Little Egret}
 \label{fig:method}
 \end{figure}
 
-\noindent Classifier: SVM
+\noindent Classifier: Random Forest
 \newline
 \newline
 \newline
@@ -37,15 +37,15 @@
 \hline
  S.No. & Species Name & Prediction Probability\\ 
 \hline
- 1 & Blue Jay & 0.27 \\ 
+ 1 & Blue Jay & 0.17 \\ 
  \hline
- 2 & Grey Heron & 0.26 \\  
+ 2 & Grey Heron & 0.28 \\  
  \hline
- 3 & Indian Peafowl & 0.26 \\    
+ 3 & Indian Peafowl & 0.14 \\    
  \hline
- 4 & Little Egret & 0.10 \\    
+ 4 & Little Egret & 0.33 \\    
  \hline
- 5 & Red-Vented Bulbul & 0.11 \\    
+ 5 & Red-Vented Bulbul & 0.08 \\    
  \hline
 \end{tabular}
 \caption{Species wise prediciton probability}
@@ -58,7 +58,7 @@
 \newpage
 \section{Model Report}
 
-\textbf{Classifier:} SVM
+\textbf{Classifier:} Random Forest
 \newline
 
 \noindent \textbf{Dataset:}
@@ -85,26 +85,26 @@ Train-Test Split: 80:20
 
 \begin{verbatim}                   precision    recall  f1-score   support
 
-         Blue Jay       0.30      0.25      0.27        12
-       Grey Heron       0.27      0.50      0.35        12
-   Indian Peafowl       0.56      0.42      0.48        12
-     Little Egret       0.80      0.67      0.73        12
-Red-Vented Bulbul       0.44      0.33      0.38        12
+         Blue Jay       0.33      0.17      0.22        12
+       Grey Heron       0.14      0.17      0.15        12
+   Indian Peafowl       0.45      0.42      0.43        12
+     Little Egret       0.40      0.67      0.50        12
+Red-Vented Bulbul       0.67      0.50      0.57        12
 
-         accuracy                           0.43        60
-        macro avg       0.47      0.43      0.44        60
-     weighted avg       0.47      0.43      0.44        60
+         accuracy                           0.38        60
+        macro avg       0.40      0.38      0.38        60
+     weighted avg       0.40      0.38      0.38        60
 \end{verbatim}
 \newpage
 \noindent \textbf{Confusion Matrix:}
 
 \begin{figure}[h!]
 \centering
-\includegraphics[width=100mm]{models/trained_models/SVM/conf.jpg}
+\includegraphics[width=100mm]{models/trained_models/Random Forest/conf.jpg}
 \end{figure}
 \noindent \textbf{Accuracy Plot:}
 \begin{figure}[h!]
 \centering
-\includegraphics[width=100mm]{models/trained_models/SVM/accuracy.png}
+\includegraphics[width=100mm]{models/trained_models/Random Forest/accuracy.png}
 \end{figure}
 \end{document}

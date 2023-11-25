@@ -69,8 +69,8 @@ def generate_report(selected_model, img_file):
         'probscore5': "{:.2f}".format(prob_scores[0][4]),
         'sklearnreport': classifier_report,
         'bird_test': BIRD_IMAGE_PATH,
-        'conf_matrix': model_path / 'conf.jpg',
-        'accu_plot': model_path / 'accuracy.png'
+        'conf_matrix': (model_path / 'conf.jpg').resolve(),
+        'accu_plot': (model_path / 'accuracy.png').resolve()
     }
 
     # Save the bird image
@@ -88,7 +88,7 @@ def generate_report(selected_model, img_file):
     output = subprocess.run(COMMAND, shell=True, capture_output=True, text=True)
 
     # Print the output
-    if f'Output written on {OUTPUT_TEX}'.replace('.tex', '.pdf') not in output.stdout:
+    if f'Output written on' not in output.stdout:
         raise Exception('Unable to generate report pdf')
     else:
         return predicted_class
