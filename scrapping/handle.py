@@ -1,10 +1,10 @@
-from concurrent import futures  
-import multiprocessing as mp  
+from concurrent import futures
+import multiprocessing as mp
 
-from pathlib import Path  
+from pathlib import Path
 
-from bs4 import BeautifulSoup  
-import requests  
+from bs4 import BeautifulSoup
+import requests
 
 from urllib3.util import parse_url  # Importing parse_url for URL parsing
 
@@ -78,4 +78,3 @@ def download_file(url, path_dir: Path, file_name=None):
         p = p / f"{parse_url(url).path.split('/')[-2]}.jpg"  # Extracting a filename from the URL
     with open(str(p), 'wb') as f:
         f.write(response.content)  # Writing the file content to the specified path
-

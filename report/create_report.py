@@ -94,7 +94,6 @@ def generate_report(selected_model, img_file):
         return predicted_class
 
 
-
 if __name__ == '__main__':
     img_path = Path('data/Little Egret/61001311.jpg')
     with open(img_path, 'rb') as f:

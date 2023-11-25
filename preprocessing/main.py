@@ -1,12 +1,12 @@
 # Importing necessary libraries
+from math import floor
+from pathlib import Path
+from random import seed, shuffle
+from shutil import move
+
+from PIL import Image, ImageOps
 from absl import app
 from absl import flags
-import os
-from pathlib import Path
-from shutil import move
-from PIL import Image, ImageOps
-from random import seed, shuffle
-from math import floor
 
 # Defining command-line flags
 FLAGS = flags.FLAGS

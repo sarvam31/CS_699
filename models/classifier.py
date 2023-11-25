@@ -20,8 +20,9 @@ SPECIES = ['Blue Jay', 'Grey Heron', 'Indian Peafowl', 'Little Egret', 'Red-Vent
 CLASSIFIERS = {
     'Random Forest': 'Random Forest',  # Classifier type: Random Forest
     'SVM': 'SVM',  # Classifier type: Support Vector Machine
-    'CNN': 'CNN'   # Classifier type: Convolutional Neural Network
+    'CNN': 'CNN'  # Classifier type: Convolutional Neural Network
 }
+
 
 class MyClassifier:
     # Path to the directory where trained models will be stored
@@ -159,7 +160,7 @@ class ClassifierSVM(MyClassifier):
         Args:
         - save_model_path (str): Path to save the trained model.
         """
-        classifier = SVC(probability=True)  # Initialize SVM classifier
+        classifier = SVC(kernel='linear', probability=True)  # Initialize SVM classifier
         classifier.fit(self.X_train, self.y_train)  # Train the classifier
         save_model(save_model_path if save_model_path else self.model_path, classifier)  # Save the trained model
         self.model = classifier
@@ -173,6 +174,29 @@ class ClassifierSVM(MyClassifier):
         - tuple: Tuple containing true and predicted values.
         """
         y_bar = self.model.predict(self.X_test)
+
+        C_values = [0.001, 0.01, 0.1, 1, 10, 100]
+        accuracy_values = []
+
+        # Iterating through different C values
+        for C in C_values:
+            svm_model = SVC(kernel='linear', C=C, random_state=42)
+            svm_model.fit(self.X_test, self.y_test)
+            accuracy = svm_model.score(self.X_test, self.y_test)
+            accuracy_values.append(accuracy)
+
+        # Plotting accuracy over different C values
+        plt.plot(C_values, accuracy_values, marker='o')
+        plt.xscale('log')  # Log scale for better visualization of C values
+        plt.title('SVM Accuracy over Different C Values (Linear Kernel)')
+        plt.xlabel('C (Regularization Parameter)')
+        plt.ylabel('Accuracy')
+        plt.grid(True)
+
+        # Save the generated plot
+        fig = plt.gcf()
+        plt.figure()
+        fig.savefig(self.model_path / 'accuracy.png', bbox_inches='tight')
 
         with open(self.model_path / 'test_run.bin', 'wb') as f:
             pickle.dump((self.y_test, y_bar), f)
@@ -263,6 +287,26 @@ class ClassifierRF(MyClassifier):
         """
         y_bar = self.model.predict(self.X_test)
 
+        accuracy_values = []
+
+        # Training Random Forest with different numbers of trees
+        for n_trees in range(1, 101):
+            rf_model = RandomForestClassifier(n_estimators=n_trees, random_state=42)
+            rf_model.fit(self.X_test, self.y_test)
+            accuracy = rf_model.score(self.X_test, self.y_test)
+            accuracy_values.append(accuracy)
+
+        # Plotting accuracy over the number of trees
+        plt.plot(range(1, 101), accuracy_values, marker='o')
+        plt.title('Random Forest Accuracy over Number of Trees')
+        plt.xlabel('Number of Trees')
+        plt.ylabel('Accuracy')
+
+        # Save the generated plot
+        fig = plt.gcf()
+        plt.figure()
+        fig.savefig(self.model_path / 'accuracy.png', bbox_inches='tight')
+
         with open(self.model_path / 'test_run.bin', 'wb') as f:
             pickle.dump((self.y_test, y_bar), f)
         return self.y_test, y_bar
@@ -292,7 +336,7 @@ class ClassifierRF(MyClassifier):
         Returns:
         - prediction: The prediction made by the model.
         """
-        classifier = ClassifierSVM.load(model_path)
+        classifier = ClassifierRF.load(model_path)
         classifier_input = utils.flatten_image(img)
         classifier_input = classifier_input.reshape(1, classifier_input.shape[0])
         return classifier.predict(classifier_input), classifier.predict_proba(classifier_input)
@@ -318,6 +362,7 @@ class ClassifierRF(MyClassifier):
             with open(model_path / 'cls_report.txt', 'w') as f:
                 f.write(report)
             return report
+
 
 class ClassifierCNN(MyClassifier):
     def __init__(self, dir_data):

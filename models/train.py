@@ -1,6 +1,5 @@
 import os
 import sys
-from pathlib import Path  # Import added for better path handling
 
 # Adding project root folder to python path
 sys.path.insert(1, os.getcwd())
@@ -11,6 +10,7 @@ from models.classifier import *
 DATA_PATH = os.path.join(os.getcwd(), 'processed')
 # Used Pathlib to handle paths instead of string concatenation
 TRAINED_MODELS_PATH = Path('.') / 'models' / 'trained_models'
+
 
 # Adjusted function signature to fit PEP8 standards
 def main() -> None:
@@ -36,6 +36,7 @@ def main() -> None:
     cnn.train()
     print('CNN training done...')
     print(cnn.get_classifier_report(cnn.model_path))
+
 
 if __name__ == "__main__":
     main()

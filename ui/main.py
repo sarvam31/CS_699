@@ -8,6 +8,7 @@ sys.path.insert(1, os.getcwd())
 
 from report.create_report import generate_report
 
+
 # Define a function to ensure better separation of concerns
 def generate_prediction_report(uploaded_file, model):
     dir_tmp = Path('.') / 'tmp'
@@ -38,6 +39,7 @@ def generate_prediction_report(uploaded_file, model):
             st.write("Report generation failed.")
     else:
         st.write('Please select an image first!')
+
 
 # Streamlit web app begins here
 st.title('Bird Prediction on Image')
